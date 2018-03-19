@@ -9,13 +9,23 @@ import android.provider.ContactsContract;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class ContactList extends AppCompatActivity {
 
@@ -37,19 +47,31 @@ public class ContactList extends AppCompatActivity {
 
         clist = findViewById(R.id.contactList);
 
-        Cursor contactCursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null,null,null,null);
-        while(contactCursor.moveToNext()){
+        Cursor contactCursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null,null,null,ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME+" ASC");
 
+        Set<List<String>> contactSet = new LinkedHashSet<>();
+        while(contactCursor.moveToNext()){
+            List<String> c = new ArrayList<String>();
             String displayName = contactCursor.getString(contactCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
             String displayNumber = contactCursor.getString(contactCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
 
             if(displayName!=null && displayNumber!=null){
-                names += displayName +",";
-                phone += displayNumber+",";
-                contact+=displayName+": "+displayNumber+",";
-            }
+                displayNumber=displayNumber.replace(" ","");
+                displayNumber=displayNumber.replace("-","");
 
+                c.add(displayName);
+                c.add(displayNumber);
+                contactSet.add(c);
+            }
         }
+        List<List<String>> contlist = new ArrayList<>(contactSet);
+
+        for(int i=0; i<contlist.size();i++){
+            names += contlist.get(i).get(0) +",";
+            phone += contlist.get(i).get(1)+",";
+            contact+=contlist.get(i).get(0)+": "+contlist.get(i).get(1)+",";
+        }
+
         contactCursor.close();
 
         nameArray=names.split(",");
